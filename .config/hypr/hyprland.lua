@@ -155,12 +155,11 @@ hl.on("hyprland.start", function()
     hl.bind(mainMod .. " + mouse:273", hl.dsp.window.drag(), { mouse = true })
 
     -- Media keys
-    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("noctalia-shell ipc call volume increase"),   { ["repeat"] = true, locked = true })
-    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("noctalia-shell ipc call volume decrease"),   { ["repeat"] = true, locked = true })
-    hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("noctalia-shell ipc call volume muteOutput"), { locked = true })
--- ajm changes
-    hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl set 5%+"), { ["repeat"] = true, locked = true })
-    hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { ["repeat"] = true, locked = true })
+    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("qs -c noctalia-shell ipc --any-display call volume increase"),   { repeating = true, locked = true })
+    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("qs -c noctalia-shell ipc --any-display call volume decrease"),   { repeating = true, locked = true })
+    hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("qs -c noctalia-shell ipc --any-display call volume muteOutput"), { locked = true })
+    hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("qs -c noctalia-shell ipc --any-display call brightness increase"), { repeating = true, locked = true })
+    hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("qs -c noctalia-shell ipc --any-display call brightness decrease"), { repeating = true, locked = true })
     hl.bind("XF86KbdBrightnessUp",   hl.dsp.exec_cmd("brightnessctl -d *::kbd_backlight set 5%+"), { ["repeat"] = true, locked = true })
     hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd("brightnessctl -d *::kbd_backlight set 5%-"), { ["repeat"] = true, locked = true })
 end)
