@@ -23,6 +23,7 @@ https://wiki.cachyos.org/installation/installation_t2macbook/
 | `~/.config/fastfetch` | Fastfetch system info display |
 | `~/.config/swaylock` | Swaylock screen locker |
 | `~/.config/hypr` | Hyprland compositor, hypridle, hyprlock |
+| `~/.config/timeshift` | Timeshift backup config (symlinked from `/etc/timeshift/timeshift.json`) |
 
 ## Setup on a new machine
 
@@ -32,4 +33,7 @@ sudo pacman -S yadm
 
 # Clone dotfiles
 yadm clone git@github.com:amiles5/macbook-cachyos.git
+
+# Symlink timeshift config
+sudo ln -sf ~/.config/timeshift/timeshift.json /etc/timeshift/timeshift.json
 ```
