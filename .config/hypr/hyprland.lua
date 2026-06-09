@@ -62,7 +62,10 @@ hl.config({
 
 -- ─── Monitors ────────────────────────────────────────────────────────────────
 
-hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "auto", scale = 2.66666 })
+-- LG Ultra HD 4K: left monitor, scale 2.6666 → ~1440x810 logical
+hl.monitor({ output = "DP-4",  mode = "3840x2160@60", position = "0x0",    scale = 2.6666 })
+-- MacBook built-in: right of DP-4, scale 2 → 1440x900 logical
+hl.monitor({ output = "eDP-1", mode = "2880x1800@60", position = "1440x0", scale = 2      })
 
 -- ─── Startup ─────────────────────────────────────────────────────────────────
 
