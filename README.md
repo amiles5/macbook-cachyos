@@ -13,6 +13,25 @@ Dotfiles for CachyOS running on an Intel MacBook (T2) managed with [yadm](https:
 See the official CachyOS T2 MacBook installation guide:
 https://wiki.cachyos.org/installation/installation_t2macbook/
 
+## Wi-Fi Firmware
+
+T2 MacBooks require proprietary firmware for Wi-Fi. If not already enabled from the live environment:
+
+```bash
+# Download the firmware package
+curl https://mirror.funami.tech/arch-mact2/os/x86_64/apple-bcm-firmware-14.0-1-any.pkg.tar.zst -o apple-bcm-firmware-14.0-1-any.pkg.tar.zst
+
+# Install it
+sudo pacman -U apple-bcm-firmware-14.0-1-any.pkg.tar.zst
+
+# Reload Wi-Fi kernel modules
+sudo modprobe -r brcmfmac_wcc
+sudo modprobe -r brcmfmac
+sudo modprobe brcmfmac
+```
+
+Wi-Fi will now persist across reboots. You can remove the downloaded `.pkg.tar.zst` file.
+
 ## Tracked configs
 
 | Directory | Description |
