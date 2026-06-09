@@ -22,6 +22,7 @@ https://wiki.cachyos.org/installation/installation_t2macbook/
 | `~/.config/ohmyposh` | Oh My Posh prompt themes |
 | `~/.config/fastfetch` | Fastfetch system info display |
 | `~/.config/swaylock` | Swaylock screen locker |
+| `~/.config/hypr` | Hyprland compositor, hypridle, hyprlock |
 
 ## Setup on a new machine
 
