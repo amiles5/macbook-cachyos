@@ -1,4 +1,5 @@
 source /usr/share/cachyos-fish-config/cachyos-config.fish
+fish_add_path ~/.local/bin
 zoxide init fish --cmd cd | source
 
 # Override eza aliases from cachyos-config with standard ls
