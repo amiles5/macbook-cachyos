@@ -1,24 +1,24 @@
 #!/bin/bash
-# Toggle eDP-1 DPMS when lid closes/opens.
+# Disable/enable eDP-1 when lid closes/opens.
 # Reads lid state from /proc/acpi and watches logind D-Bus for changes.
 
 set -euo pipefail
 
-dpms_edp1() {
+hyprctl_cmd() {
     # Ensure hyprctl can find the running instance
     if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
         local dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hypr"
         [[ -d "$dir" ]] && HYPRLAND_INSTANCE_SIGNATURE=$(ls "$dir" | head -1)
         export HYPRLAND_INSTANCE_SIGNATURE
     fi
-    hyprctl dispatch dpms "$1" eDP-1
+    hyprctl "$@"
 }
 
 apply_lid_state() {
     if grep -q "closed" /proc/acpi/button/lid/*/state 2>/dev/null; then
-        dpms_edp1 off
+        hyprctl_cmd eval 'hl.monitor({ output = "eDP-1", disabled = true })'
     else
-        dpms_edp1 on
+        hyprctl_cmd eval 'hl.monitor({ output = "eDP-1", mode = "2880x1800@60", position = "1440x0", scale = 2, disabled = false })'
     fi
 }
 
