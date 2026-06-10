@@ -16,7 +16,10 @@ hyprctl_cmd() {
 
 apply_lid_state() {
     if grep -q "closed" /proc/acpi/button/lid/*/state 2>/dev/null; then
-        hyprctl_cmd eval 'hl.monitor({ output = "eDP-1", disabled = true })'
+        # Only disable eDP-1 if DP-4 is present — disabling the sole monitor crashes Hyprland
+        if hyprctl_cmd monitors | grep -q "^Monitor DP-4"; then
+            hyprctl_cmd eval 'hl.monitor({ output = "eDP-1", disabled = true })'
+        fi
     else
         hyprctl_cmd eval 'hl.monitor({ output = "eDP-1", mode = "2880x1800@60", position = "1440x0", scale = 2, disabled = false })'
     fi
