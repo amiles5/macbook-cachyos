@@ -110,6 +110,50 @@ Lid switch behaviour is configured in `/etc/systemd/logind.conf.d/lid.conf`:
 | Lid close on AC power | Ignore (machine stays up, `hypr-lid-handler` disables `eDP-1`) |
 | Lid close when docked | Ignore |
 
+## Cloning to identical hardware (T2 MacBook)
+
+Use [Clonezilla](https://clonezilla.org/) to image the full disk to a new T2 MacBook.
+
+### Before imaging — prepare the target machine
+
+The T2 chip blocks booting from external media by default. On the **target** MacBook:
+
+1. Boot into macOS Recovery (`Cmd+R` at startup)
+2. Open **Startup Security Utility**
+3. Set security to **No Security**
+4. Enable **Allow booting from external media**
+
+### Create the image (source machine)
+
+1. Boot the source MacBook from a Clonezilla USB
+2. Choose **device-to-image** → save to an external disk
+3. Select the internal disk (e.g. `nvme0n1`) as the source
+
+### Restore the image (target machine)
+
+1. Boot the target MacBook from the Clonezilla USB
+2. Choose **image-to-device** → select the saved image
+3. Select the target internal disk as the destination
+
+### If the target disk is larger
+
+Clonezilla copies the partition layout exactly. Expand the Btrfs partition after booting into CachyOS:
+
+```bash
+# Expand the partition to fill the disk (use your partition tool, e.g. parted)
+sudo btrfs filesystem resize max /
+```
+
+### After restoring
+
+The cloned machine is a full copy — no further setup needed. If you later want to re-sync dotfile changes from this repo:
+
+```bash
+yadm pull
+```
+
+---
+
 ## Setup on a new machine
 
 ```bash
