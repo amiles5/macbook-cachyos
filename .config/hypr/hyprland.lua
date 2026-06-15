@@ -128,13 +128,10 @@ hl.on("hyprland.start", function()
     local mainMod = "SUPER"
 
     -- Applications
-    hl.bind(mainMod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[workspace 3] firefox"))
-    hl.bind(mainMod .. " + C",              hl.dsp.exec_cmd("[workspace 3] firefox --name ff-work -P sonos https://play.sonos.com --no-remote"))
+    hl.bind(mainMod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[workspace 2] firefox"))
+    hl.bind(mainMod .. " + C",              hl.dsp.exec_cmd("[workspace 2] firefox --name ff-work -P sonos https://play.sonos.com --no-remote"))
     hl.bind(mainMod .. " + J",              hl.dsp.exec_cmd("[workspace 3] joplin-desktop"))
     hl.bind(mainMod .. " + RETURN",         hl.dsp.exec_cmd("[workspace 1] " .. terminal))
-    hl.bind(mainMod .. " + S",              hl.dsp.exec_cmd("[workspace 4] solaar"))
-    hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("[workspace 4] virt-manager"))
-    hl.bind(mainMod .. " + D",              hl.dsp.exec_cmd("rofi -show drun || pkill rofi"))
 
     -- Window management
     hl.bind(mainMod .. " + W",     hl.dsp.window.close())
