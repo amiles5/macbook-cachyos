@@ -67,6 +67,17 @@ hl.monitor({ output = "DP-4",  mode = "3840x2160@60", position = "0x0",    scale
 -- MacBook built-in: right of DP-4, scale 2 → 1440x900 logical
 hl.monitor({ output = "eDP-1", mode = "2880x1800@60", position = "1440x0", scale = 2      })
 
+-- ─── Workspaces ──────────────────────────────────────────────────────────────
+
+-- Workspaces 1-5 on DP-4 when connected, fall back to eDP-1 when not
+hl.workspace_rule({ workspace = "1", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "2", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "3", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "4", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "5", monitor = "DP-4" })
+-- Workspace 6 always on eDP-1
+hl.workspace_rule({ workspace = "6", monitor = "eDP-1" })
+
 -- ─── Startup ─────────────────────────────────────────────────────────────────
 
 hl.on("hyprland.start", function()
@@ -119,7 +130,7 @@ hl.on("hyprland.start", function()
     -- Applications
     hl.bind(mainMod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[workspace 3] firefox"))
     hl.bind(mainMod .. " + C",              hl.dsp.exec_cmd("[workspace 3] firefox --name ff-work -P sonos https://play.sonos.com --no-remote"))
-    hl.bind(mainMod .. " + J",              hl.dsp.exec_cmd("[workspace 5] joplin-desktop"))
+    hl.bind(mainMod .. " + J",              hl.dsp.exec_cmd("[workspace 3] joplin-desktop"))
     hl.bind(mainMod .. " + RETURN",         hl.dsp.exec_cmd("[workspace 1] " .. terminal))
     hl.bind(mainMod .. " + S",              hl.dsp.exec_cmd("[workspace 4] solaar"))
     hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("[workspace 4] virt-manager"))
