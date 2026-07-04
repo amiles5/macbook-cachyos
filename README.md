@@ -41,10 +41,10 @@ Wi-Fi will now persist across reboots. You can remove the downloaded `.pkg.tar.z
 | `~/.config/ohmyposh` | Oh My Posh prompt themes |
 | `~/.config/fastfetch` | Fastfetch system info display |
 | `~/.config/swaylock` | Swaylock screen locker |
-| `~/.config/hypr` | Hyprland compositor, hypridle, hyprlock |
-| `~/.config/systemd/user` | User systemd services |
-| `~/.local/bin` | User scripts |
+| `~/.config/hypr` | Hyprland compositor, hypridle, hyprlock, lid-switch script |
+| `~/.config/noctalia` | Noctalia shell settings |
 | `~/.config/timeshift` | Timeshift backup config (symlinked from `/etc/timeshift/timeshift.json`) |
+| `system/etc/...` | Reference copies of files that must live outside `$HOME` (yadm only tracks `$HOME`) — see [System files outside `$HOME`](#system-files-outside-home) |
 
 ## Hyprland
 
@@ -87,18 +87,25 @@ Volume, brightness, and keyboard backlight keys all repeat when held.
 
 Workspaces 1–5 are bound to `DP-4`; workspace 6 is bound to `eDP-1`. When `DP-4` is not connected, workspaces 1–5 fall back to `eDP-1` automatically.
 
-### Lid close behaviour
+### Lid close behaviour (clamshell mode)
 
-A systemd user service (`hypr-lid-handler`) watches logind D-Bus for `LidClosed` events:
+Hyprland binds the lid switch directly — no separate daemon. In `hyprland.lua`:
 
-- **Lid closed**: `eDP-1` is disabled in Hyprland (removed from layout, mouse confined to `DP-4`)
-- **Lid opened**: `eDP-1` is re-enabled at its configured position and scale
-
-The service starts automatically with the graphical session. To check its status:
-
-```bash
-systemctl --user status hypr-lid-handler
+```lua
+local lidScript = "/home/milesj/.config/hypr/scripts/lid-switch.sh"
+hl.bind("switch:on:Lid Switch",        hl.dsp.exec_cmd(lidScript .. " close"), { locked = true })
+hl.bind("switch:off:Lid Switch",       hl.dsp.exec_cmd(lidScript .. " open"),  { locked = true })
+hl.bind("switch:on:macsmc-chamshell",  hl.dsp.exec_cmd(lidScript .. " close"), { locked = true })
+hl.bind("switch:off:macsmc-chamshell", hl.dsp.exec_cmd(lidScript .. " open"),  { locked = true })
 ```
+
+Bound on both `Lid Switch` and `macsmc-chamshell` switch devices since it's unclear which one actually fires on this hardware (check with `hyprctl devices`); the script's commands are idempotent either way.
+
+`~/.config/hypr/scripts/lid-switch.sh`:
+- **close**: if on AC power *and* the external monitor (`DP-4`) is connected, disables `eDP-1`
+- **open**: re-enables `eDP-1` at its configured mode/position/scale
+
+An earlier version used a separate `hypr-lid-handler` systemd user service watching logind D-Bus — removed because it raced with these binds. Nothing needs to be enabled separately; the binds are active as soon as Hyprland loads the config.
 
 ## Power management
 
@@ -107,8 +114,51 @@ Lid switch behaviour is configured in `/etc/systemd/logind.conf.d/lid.conf`:
 | Condition | Action |
 |-----------|--------|
 | Lid close on battery | Power off |
-| Lid close on AC power | Ignore (machine stays up, `hypr-lid-handler` disables `eDP-1`) |
+| Lid close on AC power | Ignore (machine stays up, `lid-switch.sh` disables `eDP-1`) |
 | Lid close when docked | Ignore |
+
+### AC power detection workaround
+
+The `macsmc-power` kernel driver (T2 Macs) updates `/sys/class/power_supply/macsmc-ac/online` correctly but never fires a `change` uevent when the charger is plugged/unplugged. `upowerd` is event-driven (it doesn't poll sysfs), so it never notices — Noctalia's battery widget gets stuck showing whatever AC state was true at boot.
+
+Two-part fix:
+
+1. **`system/etc/systemd/system/macsmc-power-uevent-poll.{service,timer}`** — a timer that runs `udevadm trigger --action=change --subsystem-match=power_supply` every 5s, forcing upowerd to re-read the real state. Install:
+   ```bash
+   sudo cp ~/system/etc/systemd/system/macsmc-power-uevent-poll.{service,timer} /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now macsmc-power-uevent-poll.timer
+   ```
+
+2. **`system/etc/xdg/quickshell/noctalia-shell/Services/Hardware/BatteryService.qml`** — patched copy of Noctalia's battery service. The `macsmc-battery` driver also reports `state: fully-charged` even while unplugged (charge thresholds cap charging at ~80%, so it never leaves the fully-charged state). Noctalia's `isPluggedIn()` trusted that state alone. The patch adds a real `acOnline` check gating `isPluggedIn()`. Install:
+   ```bash
+   sudo cp ~/system/etc/xdg/quickshell/noctalia-shell/Services/Hardware/BatteryService.qml /etc/xdg/quickshell/noctalia-shell/Services/Hardware/BatteryService.qml
+   ```
+   **Warning:** a `noctalia-qs` package update via pacman will overwrite this file — reapply after every update (diff against the mirrored copy first in case the upstream file changed structurally).
+
+## Boot order / startup disk
+
+CachyOS uses `systemd-boot`, registered as an EFI boot entry. On a fresh install (or after cloning), macOS is typically still first in the firmware's `BootOrder`, so the machine boots into macOS unless you hold Option at startup.
+
+To make Linux the default:
+
+```bash
+# List current entries
+efibootmgr -v
+
+# Find the "Linux Boot Manager" (systemd-boot) entry number, e.g. 0002,
+# and any "Fallback Linux Boot Manager" entry, e.g. 0003.
+# Reorder so Linux boots first; keep macOS reachable as a fallback:
+sudo efibootmgr -o 0002,0003,0080   # numbers vary per machine — check -v output first
+```
+
+If cloning to new hardware (or after a disk swap), stale boot entries may reference partition GUIDs that no longer exist on the current disk — `efibootmgr -v` will show a GUID that doesn't match any partition in `lsblk -o NAME,PARTUUID`. Delete those:
+
+```bash
+sudo efibootmgr -b <stale-entry> -B
+```
+
+`bootctl status` shows the actual currently-running loader (more trustworthy than `efibootmgr`'s `BootCurrent`, which can be stale on this hardware).
 
 ## Cloning to identical hardware (T2 MacBook)
 
@@ -154,6 +204,10 @@ yadm pull
 
 ---
 
+## System files outside `$HOME`
+
+yadm only tracks `$HOME`, so anything that must live under `/etc` is instead kept as a reference copy in this repo under `system/`, mirroring its real absolute path (e.g. `system/etc/systemd/system/foo.service` installs to `/etc/systemd/system/foo.service`). These are **not** symlinked automatically — copy them into place manually (see install steps in each relevant section above: [AC power detection workaround](#ac-power-detection-workaround), [Lid close behaviour](#lid-close-behaviour-clamshell-mode)).
+
 ## Setup on a new machine
 
 ```bash
@@ -166,9 +220,6 @@ yadm clone git@github.com:amiles5/macbook-cachyos.git
 # Symlink timeshift config
 sudo ln -sf ~/.config/timeshift/timeshift.json /etc/timeshift/timeshift.json
 
-# Enable lid handler service
-systemctl --user enable --now hypr-lid-handler
-
 # Configure lid switch (copy to /etc/systemd/logind.conf.d/lid.conf):
 # [Login]
 # HandleLidSwitch=poweroff
@@ -177,4 +228,19 @@ systemctl --user enable --now hypr-lid-handler
 sudo mkdir -p /etc/systemd/logind.conf.d
 # (create lid.conf manually with the above content)
 sudo systemctl restart systemd-logind
+
+# Install the AC-power uevent workaround timer
+sudo cp ~/system/etc/systemd/system/macsmc-power-uevent-poll.{service,timer} /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now macsmc-power-uevent-poll.timer
+
+# Patch Noctalia's battery service (reapply after every noctalia-qs update)
+sudo cp ~/system/etc/xdg/quickshell/noctalia-shell/Services/Hardware/BatteryService.qml \
+        /etc/xdg/quickshell/noctalia-shell/Services/Hardware/BatteryService.qml
+
+# Set Linux as the default startup disk (see "Boot order / startup disk" above
+# for how to find your entry numbers)
+sudo efibootmgr -o <linux-entry>,<linux-fallback-entry>,<macos-entry>
 ```
+
+Note: `~/.config/hypr/scripts/lid-switch.sh` and Hyprland's `switch:on/off` binds are already tracked and active as soon as Hyprland loads — no separate install step needed for clamshell mode.
