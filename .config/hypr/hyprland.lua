@@ -63,18 +63,18 @@ hl.config({
 -- ─── Monitors ────────────────────────────────────────────────────────────────
 
 -- LG Ultra HD 4K: left monitor, scale 2.6666 → ~1440x810 logical
-hl.monitor({ output = "DP-6",  mode = "3840x2160@60", position = "0x0",    scale = 2.6666 })
+hl.monitor({ output = "DP-4",  mode = "3840x2160@60", position = "0x0",    scale = 2.6666 })
 -- MacBook built-in: right of DP-4, scale 2 → 1440x900 logical
 hl.monitor({ output = "eDP-1", mode = "2880x1800@60", position = "1440x0", scale = 2      })
 
 -- ─── Workspaces ──────────────────────────────────────────────────────────────
 
 -- Workspaces 1-5 on DP-4 when connected, fall back to eDP-1 when not
-hl.workspace_rule({ workspace = "1", monitor = "DP-6" })
-hl.workspace_rule({ workspace = "2", monitor = "DP-6" })
-hl.workspace_rule({ workspace = "3", monitor = "DP-6" })
-hl.workspace_rule({ workspace = "4", monitor = "DP-6" })
-hl.workspace_rule({ workspace = "5", monitor = "DP-6" })
+hl.workspace_rule({ workspace = "1", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "2", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "3", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "4", monitor = "DP-4" })
+hl.workspace_rule({ workspace = "5", monitor = "DP-4" })
 -- Workspace 6 always on eDP-1
 hl.workspace_rule({ workspace = "6", monitor = "eDP-1" })
 
