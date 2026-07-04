@@ -1,0 +1,9 @@
+[Unit]
+Description=Force a power_supply uevent so upowerd picks up macsmc-ac/battery state changes
+# The macsmc-power kernel driver updates sysfs values but doesn't emit a
+# change uevent on AC plug/unplug, so upowerd (event-driven, not polling)
+# never re-reads it. This periodically forces the notification.
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/udevadm trigger --action=change --subsystem-match=power_supply

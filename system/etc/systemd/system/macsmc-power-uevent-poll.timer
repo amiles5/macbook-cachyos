@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodically force macsmc-power uevents for upowerd
+
+[Timer]
+OnBootSec=10s
+OnUnitActiveSec=5s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
